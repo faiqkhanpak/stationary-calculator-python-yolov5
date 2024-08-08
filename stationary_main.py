@@ -34,7 +34,7 @@ class Window(QDialog):
         self.eraser.setRange(0, 100)
         self.sharpner = QSpinBox(self)
         self.sharpner.setRange(0, 100)
-        names=glob.glob(r"G:\Study Material 2\FAST_NUCES\Fall 22\Deep Learning\assign2\testimages\*.jpg") 
+        names=glob.glob(r"G:\Study Material 2\testimages\*.jpg") 
         self.names1=[i.split('testimages')[1:][0][1:] for i in names]
         self.lcd = QLCDNumber(self)
         self.combobox1 = QComboBox(self)
