@@ -130,7 +130,7 @@ class Window(QDialog):
     def readimage(self):
         self.img=self.combobox1.currentText().split(".")[0]
 
-        #image = cv2.imread(r'G:\Study Material 2\FAST_NUCES\Fall 22\Deep Learning\Assignment1\dataset\images\001.jpg', 0)
+        #image = cv2.imread(r'G:\Study Material 2\dataset\images\001.jpg', 0)
         self.im = Image.open(r'testimages\\'+self.img+'.jpg')
         self.f = open(r"testimages\\"+self.combobox1.currentText(), "r")
         
