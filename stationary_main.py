@@ -19,8 +19,41 @@ from PIL import Image, ImageDraw, ImageQt
 import glob
 
 # All files and directories ending with .txt and that don't begin with a dot:
+import numpy as np
+import torch
+import random
+from PIL import Image, ImageDraw,ImageFont,ImageFilter
+import matplotlib.pyplot as plt
+import numpy as np
 
+class YOLOV5Model:
+    def __init__(self) -> None:
+        self.yoloPath='G:/Study Material 2/yolov5-master/'
+        self.model=None
+        self.inferSizeValue=640       
+    def loadModel(self,modelPath='G:/Study Material 2/yolov5-master/best.pt'):
+        self.modelPath=modelPath        
+        try:
+            self.model = torch.hub.load(self.yoloPath, 'custom', path=self.modelPath, source='local',force_reload=True)  # local repo 
+            self.classnames = self.model.module.names if hasattr(self.model, 'module') else self.model.names
+            return True, ''
+        except Exception as e:
+            return False, e
+    def inferImage(self,img,infSize=640,conf=0.4,iou=0.45):
+        infSize=self.inferSizeValue
+        self.model.iou=iou
+        self.model.conf=conf
+        results = self.model(img,size=infSize)  # includes NMS   
+        boxes = results.pandas().xyxy[0] 
 
+        bboxes=[]
+        for index, row in boxes.iterrows():
+            xyxy=[row['xmin'],row['ymin'],row['xmax'],row['ymax'],row['name'], row['confidence'],row['class']]
+            bboxes.append(xyxy)  
+
+        results.show(labels=True)
+        
+        return results.ims[0], bboxes, results
 # main window
 # which inherits QDialog
 class Window(QDialog):
@@ -110,7 +143,29 @@ class Window(QDialog):
         self.canvas.draw()
         
     def plot2(self):
-        
+        model = YOLOV5Model()
+        model.loadModel()
+        img, bboxes,results=model.inferImage(self.im)
+        df=results.pandas().xyxy[0]
+        print(df)
+        if df['name'].isin(['pencil']).any():
+            a1=df['name'].value_counts()['pencil']
+        else:
+            a1=0
+        if df['name'].isin(['eraser']).any():
+            a2=df['name'].value_counts()['eraser']
+        else:
+            a2=0
+        if df['name'].isin(['sharpner']).any():
+            a3=df['name'].value_counts()['sharpner']
+        else:
+            a3=0
+        if df['name'].isin(['scale']).any():
+            print(df['name'].values.any())
+            a4=df['name'].value_counts()['scale']
+        else:
+            a4=0
+
         #self.lcd.setGeometry(3, 120, 150, 30)
         palette = self.lcd.palette()
         # foreground color
@@ -123,14 +178,14 @@ class Window(QDialog):
         palette.setColor(palette.Dark, QtGui.QColor(0, 255, 0))
         self.lcd.setPalette(palette)
         self.lcd.setDigitCount(6)
-        a1,a2,a3,a4=1,2,3,4
+        #a1,a2,a3,a4=np.random.randint(2,5)  ,np.random.randint(2,5),np.random.randint(2,5),np.random.randint(2,5)
         total=a1*self.pencil.value()+a2*self.eraser.value()+a3*self.sharpner.value()+a4*self.scale.value()
         self.lcd.display(total)
 		
     def readimage(self):
         self.img=self.combobox1.currentText().split(".")[0]
 
-        #image = cv2.imread(r'G:\Study Material 2\dataset\images\001.jpg', 0)
+        #image = cv2.imread(r'G:\Study Material 2\images\001.jpg', 0)
         self.im = Image.open(r'testimages\\'+self.img+'.jpg')
         self.f = open(r"testimages\\"+self.combobox1.currentText(), "r")
         
